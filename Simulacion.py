@@ -2,14 +2,45 @@ import random
 import math
 import numpy as np
 
-def Simular(n : int, m : int, / , 
+class Resultado:
+    def __init__(self, 
+                contagios, 
+                satisfaccion, 
+                asistencias, 
+                consumo, 
+                adj, 
+                consume):
+        
+        self.contagios = contagios
+        self.satisfaccion = satisfaccion
+        self.asistencias = asistencias
+        self.consumo = consumo
+        self.adj = adj
+        self.consume = consume
+
+        self.dict ={
+            "Contagios": contagios,
+            "Satisfaccion": satisfaccion,
+            "Asistencias": asistencias,
+            "Consumo": consumo,
+            "Adj": adj,
+            "Consume": consume
+        }
+
+    def __getitem__(self, key):
+        return self.dict[key]
+
+    def __str__(self):
+        return f"Contagios: {self.contagios}\nSatisfaccion: {self.satisfaccion}\nAsistencias: {self.asistencias}\nConsumo: {self.consumo}\nAdj: {self.adj}\nConsume: {self.consume}"
+def Simular(n : int, m : int, * , 
             alfa : float, t : 
             int, seed : int = 20_05_2024, 
             dias : int = 7, diasBase = 5,
             lat : int = 5, latBase = 3,
             memory : float = 0.9,
             beta : float = 1,
-            ) -> tuple[list[float],list[float], list[list[float]]]:
+            ProbabilidadSeguirSano = lambda trueExp, Asis: math.exp(-trueExp/(beta *Asis))
+            ) -> Resultado:
     """
     n personas,
     m actividaes
@@ -33,6 +64,9 @@ def Simular(n : int, m : int, / ,
         [ random.lognormvariate(0,1) - eps for _ in range(m) ] for _ in range(n)
     ]
 
+    consume = [
+        [ random.lognormvariate(0,1) - eps for _ in range(m) ] for _ in range(n)
+    ]
 
     # Regularizo la utilidad
     for i in range(n):
@@ -44,6 +78,8 @@ def Simular(n : int, m : int, / ,
 
     estado = [0] * n
     estado[random.randint(0,n-1)] = latBase + np.random.binomial(lat,0.5)
+    consumo = [0] * t
+    asistencias = [0] * t
     #expuestos = [0] * m
     #asis = [1] * m
     riesgo = [0] * m
@@ -51,7 +87,7 @@ def Simular(n : int, m : int, / ,
     for turno in range(t):
         visExp = [0.0] * m
         trueExp = [0.0] * m
-        sigAsis   = [1.0] * m
+        Asis   = [1] * m
         
         # print(riesgo)
 
@@ -60,16 +96,17 @@ def Simular(n : int, m : int, / ,
                 for j in range(m):
                     if riesgo[j] * alfa < adj[i][j]:
                         satisfaccion[turno] += adj[i][j]
-                        sigAsis[j] += 1
+                        Asis[j] += 1
                         visExp[j] += int( estado[i] == 1 )
                         trueExp[j] += int( estado[i] >= 1 )
-
+             
         for i in range(n):
             if estado[i] == 0:
                 probSano = 1
                 for j in range(m):
                     if riesgo[j] * alfa < adj[i][j]:
-                        probSano *= math.exp(-trueExp[j]/(beta *sigAsis[j]))
+                        probSano *= ProbabilidadSeguirSano(trueExp[j], beta*Asis[j])
+                        #math.exp(-trueExp[j]/(beta *Asis[j]))
                 if random.random() > probSano:
                     estado[i] = np.random.binomial(lat,0.5) + latBase
                     contagios[turno] += 1
@@ -79,9 +116,17 @@ def Simular(n : int, m : int, / ,
             else : estado[i] += 1
 
         for j in range(m):
-            riesgo[j] = memory * riesgo[j] + (1-memory) * (visExp[j]/sigAsis[j])
+            riesgo[j] = memory * riesgo[j] + (1-memory) * (visExp[j]/Asis[j])
 
+        asistencias[turno] = sum(Asis)
         #expuestos = visExp
         #asis = sigAsis    
     
-    return contagios, satisfaccion, adj
+    return Resultado(
+        contagios, 
+        satisfaccion, 
+        asistencias, 
+        consumo, 
+        adj, 
+        consume
+    )
