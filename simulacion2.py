@@ -17,7 +17,10 @@ class Simulacion:
         memoria (float): Coeficiente que se utiliza para actualizar el riesgo percibido para realizar una determinada actividad.
         max_tolerancia_riesgo (float): Máximo valor que puede tomar la tolerancia al riesgo de un individuo.
         umbral (float): Umbral de corte de satisfacción para inicializar el grafo.
-        beta (float): Riesgo de contagio. Una persona expuesta a un lugar con A latentes y B asistentes sigue sana con probabilidad exp(-A/(beta*B)).
+        beta (float): Riesgo de contagio. Una persona expuesta a un lugar con A expuestos y B asistentes sigue sana con probabilidad exp(-A/(beta*B)).
+        min_asistencias_para_cerrar (int): Número mínimo de asistencias diarias para mantener una entidad abierta.
+        max_infecciones_para_evitar (int): Número máximo de infecciones que puede tener un individuo en una entidad antes de evitarla.
+        politicas_publicas (bool): Indica si se implementan políticas públicas en la simulación.
         """
         self.n = n
         self.m = m
@@ -27,6 +30,9 @@ class Simulacion:
         self.max_tolerancia_riesgo = max_tolerancia_riesgo
         self.umbral = umbral
         self.beta = beta
+        # self.min_asistencias_para_cerrar = min_asistencias_para_cerrar
+        # self.max_infecciones_para_evitar = max_infecciones_para_evitar
+        # self.politicas_publicas = politicas_publicas
         
         self.B = self.inicializar_grafo()
         self.estados, self.duraciones = self.inicializar_estados_duracion()
