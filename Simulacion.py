@@ -39,7 +39,7 @@ def Simular(n : int, m : int, * ,
             lat : int = 5, latBase = 3,
             memory : float = 0.9,
             beta : float = 1,
-            ProbabilidadSeguirSano = lambda trueExp, Asis: math.exp(-trueExp/(beta *Asis))
+            ProbabilidadSeguirSano = lambda trueExp, Asis: math.exp(-trueExp/Asis)
             ) -> Resultado:
     """
     n personas,

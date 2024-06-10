@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 class Simulacion:
     def __init__(self, n: int, m: int, til_base: int, tic_base: int, 
-                 memoria: float, max_tolerancia_riesgo: float, umbral: float, beta: float):
+                 memoria: float, max_tolerancia_riesgo: float, umbral: float, fun_contagio , initial_exposeds : int = 1):
         """
         Inicializa una instancia de la clase Simulacion.
 
@@ -21,6 +21,7 @@ class Simulacion:
         min_asistencias_para_cerrar (int): Número mínimo de asistencias diarias para mantener una entidad abierta.
         max_infecciones_para_evitar (int): Número máximo de infecciones que puede tener un individuo en una entidad antes de evitarla.
         politicas_publicas (bool): Indica si se implementan políticas públicas en la simulación.
+        inicial_exposeds : Cantidad de invididuos expuestos al inicio de la simulación.
         """
         self.n = n
         self.m = m
@@ -29,7 +30,8 @@ class Simulacion:
         self.memoria = memoria
         self.max_tolerancia_riesgo = max_tolerancia_riesgo
         self.umbral = umbral
-        self.beta = beta
+        self.fun_contagio = fun_contagio
+        self.initial_exposeds = initial_exposeds
         # self.min_asistencias_para_cerrar = min_asistencias_para_cerrar
         # self.max_infecciones_para_evitar = max_infecciones_para_evitar
         # self.politicas_publicas = politicas_publicas
@@ -56,11 +58,11 @@ class Simulacion:
         B.add_nodes_from(personas, bipartite=0)
         B.add_nodes_from(entidades, bipartite=1)
         
-        matriz = np.random.lognormal(0, 1, (self.n, self.m))
+        matriz = np.random.lognormal(0, 1, (self.n, self.m)) - self.umbral
         for i in personas:
             suma = sum([matriz[i][j] for j in range(self.m) if matriz[i][j] > 0])
             for j in entidades:
-                if matriz[i][j - self.n] > self.umbral:
+                if matriz[i][j - self.n] > 0:
                     B.add_edge(i, j, satisfaccion=matriz[i][j - self.n]/suma)
         return B
 
@@ -73,9 +75,12 @@ class Simulacion:
         """
         estados = ['S'] * self.n
         duraciones = [0] * self.n
-        initial_exposed = random.randint(0, self.n-1)
-        estados[initial_exposed] = 'E'
-        duraciones[initial_exposed] = self.til_base + np.random.geometric(0.5)
+        for i in range(self.initial_exposeds):
+            estados[i] = 'E'
+            duraciones[i] = self.til_base + np.random.geometric(0.5)
+        # initial_exposed = random.randint(0, self.n-1)
+        # estados[initial_exposed] = 'E'
+        # duraciones[initial_exposed] = self.til_base + np.random.geometric(0.5)
         return estados, duraciones
 
     def inicializar_tolerancias(self) -> List[float]:
@@ -133,8 +138,8 @@ class Simulacion:
         for i, estado in enumerate(self.estados):
             if estado == 'S':
                 for entidad in self.B.neighbors(i):
-                    contagios = self.infectados_por_entidad[entidad] + self.expuestos_por_entidad[entidad]
-                    probabilidad_contagio = 0.0 if self.asistencias_por_entidad[entidad] == 0 else np.exp(-contagios / (self.beta * self.asistencias_por_entidad[entidad]))
+                    contagios = self.expuestos_por_entidad[entidad]
+                    probabilidad_contagio = 0.0 if self.asistencias_por_entidad[entidad] == 0 else self.fun_contagio(contagios, self.asistencias_por_entidad[entidad])#1 - np.exp(-contagios / (self.beta * self.asistencias_por_entidad[entidad]))
                     if self.individuo_asistio_a_entidad[i][entidad - self.n]:
                         if random.random() < probabilidad_contagio:
                             nuevos_estados[i] = 'E'
@@ -165,7 +170,8 @@ class Simulacion:
 
         for i in range(self.n):
             for entidad in self.B.neighbors(i):
-                acude = self.decidir_asistencia(
+                
+                acude = (self.estados[i] in "ES") and self.decidir_asistencia(
                     self.tolerancias[i], 
                     self.riesgo_por_entidad[entidad], 
                     self.B[i][entidad]['satisfaccion']
@@ -173,7 +179,7 @@ class Simulacion:
                 if acude:
                     self.asistencias_por_entidad[entidad] += 1
                     self.individuo_asistio_a_entidad[i][entidad - self.n] = 1
-                    if self.estados[i] == 'I':
+                    if self.estados[i] == 'E' and self.duraciones[i]==0:
                         self.infectados_por_entidad[entidad] += 1
                     elif self.estados[i] == 'E':
                         self.expuestos_por_entidad[entidad] += 1
@@ -194,11 +200,11 @@ class Simulacion:
         historial_infectados = []
         historial_satisfaccion = []
         historial_asistencias = []
-        
+
         for dia in range(dias):
             self.actualizar_riesgos()
             self.registrar_asistencias()
-            infectados_reportados = sum(1 for estado in self.estados if estado == 'I')
+            infectados_reportados = sum(1 for estado in self.estados if (estado in 'I'))
             satisfaccion_agregada = 0
             asistencias = sum(self.asistencias_por_entidad.values())
             
