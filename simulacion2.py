@@ -45,6 +45,9 @@ class Simulacion:
         self.individuo_asistio_a_entidad = np.zeros((n, m))
         self.riesgo_por_entidad = {i: 0 for i in range(n, n + m)}
 
+    def asistencias_posibles(self):
+        return self.B.edges()
+
     def inicializar_grafo(self) -> nx.Graph:
         """
         Inicializa el grafo bipartito pesado.
@@ -58,12 +61,18 @@ class Simulacion:
         B.add_nodes_from(personas, bipartite=0)
         B.add_nodes_from(entidades, bipartite=1)
         
-        matriz = np.random.lognormal(0, 1, (self.n, self.m)) - self.umbral
+        matriz = np.random.lognormal(0, 1, (self.n, self.m))
         for i in personas:
+            copia = matriz[i].copy()
+            copia.sort()
+            umbral = min(self.umbral, copia[-3])
+            matriz[i] -= umbral
             suma = sum([matriz[i][j] for j in range(self.m) if matriz[i][j] > 0])
+            for j in range(self.m):
+                matriz[i][j] /= suma
             for j in entidades:
                 if matriz[i][j - self.n] > 0:
-                    B.add_edge(i, j, satisfaccion=matriz[i][j - self.n]/suma)
+                    B.add_edge(i, j, satisfaccion=matriz[i][j - self.n])
         return B
 
     def inicializar_estados_duracion(self) -> Tuple[List[str], List[int]]:
