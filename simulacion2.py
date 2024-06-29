@@ -230,3 +230,30 @@ class Simulacion:
             historial_asistencias.append(asistencias)
         
         return historial_infectados, historial_satisfaccion, historial_asistencias
+
+def PlotSimulacion(
+        titulo : str,
+        historial_infectados : List[int],
+        historial_satisfaccion : List[float],
+        historial_asistencias : List[int],
+):
+    ax1.plot(historial_infectados, label='Infectados')
+    ax1.plot(historial_satisfaccion, label='Satisfacción')
+    asistencias_posibles = len(simulacion.asistencias_posibles())
+    ax1.plot([x/asistencias_posibles * N for x in historial_asistencias], label='Asistencias')
+    ax1.legend()
+
+    m_infectados = max(historial_infectados)
+    ax2.plot([x/m_infectados for x in historial_infectados], label = "Infectados reescalados (1 = maximo de infectados)")
+
+    if max_tolerancia_riesgo>1000:
+        ax1.set_title(f"Simulación con infinita tolerancia al riesgo")
+        ax2.set_title(f"Simulación con infinita tolerancia al riesgo")
+    else:
+        ax1.set_title(f"Simulación con {max_tolerancia_riesgo:.4f} tolerancia al riesgo")
+        ax2.set_title(f"Simulación con {max_tolerancia_riesgo:.4f} tolerancia al riesgo")
+    
+    ax2.legend()
+
+    ax1.set_xlabel("Tiempo")
+    ax2.set_xlabel("Tiempo")
