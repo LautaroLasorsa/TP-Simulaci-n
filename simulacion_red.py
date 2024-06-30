@@ -98,7 +98,6 @@ class SimulacionRed:
     def calcular_riesgo(self, entidad: int) -> float:
         """
         Calcula el riesgo de asistir a una entidad específica.
-        AGREGAR: asistencia = asistencia * memoria + (1-memoria)*np.exp(- (exp*etoi) ** alfa * beta)
 
         Parámetros:
         entidad (int): ID de la entidad.
