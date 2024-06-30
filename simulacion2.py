@@ -21,7 +21,7 @@ class Simulacion:
         min_asistencias_para_cerrar (int): Número mínimo de asistencias diarias para mantener una entidad abierta.
         max_infecciones_para_evitar (int): Número máximo de infecciones que puede tener un individuo en una entidad antes de evitarla.
         politicas_publicas (bool): Indica si se implementan políticas públicas en la simulación.
-        inicial_exposeds : Cantidad de invididuos expuestos al inicio de la simulación.
+        initial_exposeds (int): Cantidad de invididuos expuestos al inicio de la simulación.
         """
         self.n = n
         self.m = m
@@ -32,9 +32,6 @@ class Simulacion:
         self.umbral = umbral
         self.fun_contagio = fun_contagio
         self.initial_exposeds = initial_exposeds
-        # self.min_asistencias_para_cerrar = min_asistencias_para_cerrar
-        # self.max_infecciones_para_evitar = max_infecciones_para_evitar
-        # self.politicas_publicas = politicas_publicas
         
         self.B = self.inicializar_grafo()
         self.estados, self.duraciones = self.inicializar_estados_duracion()
@@ -104,6 +101,7 @@ class Simulacion:
     def calcular_riesgo(self, entidad: int) -> float:
         """
         Calcula el riesgo de asistir a una entidad específica.
+        AGREGAR: asistencia = asistencia * memoria + (1-memoria)*np.exp(- (exp*etoi) ** alfa * beta)
 
         Parámetros:
         entidad (int): ID de la entidad.
