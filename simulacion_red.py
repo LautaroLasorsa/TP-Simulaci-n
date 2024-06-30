@@ -3,7 +3,7 @@ import networkx as nx
 import random
 from typing import List, Tuple
 
-class Simulacion:
+class SimulacionRed:
     def __init__(self, n: int, m: int, til_base: int, tic_base: int, 
                  memoria: float, max_tolerancia_riesgo: float, umbral: float, fun_contagio , initial_exposeds : int = 1):
         """
@@ -17,10 +17,7 @@ class Simulacion:
         memoria (float): Coeficiente que se utiliza para actualizar el riesgo percibido para realizar una determinada actividad.
         max_tolerancia_riesgo (float): Máximo valor que puede tomar la tolerancia al riesgo de un individuo.
         umbral (float): Umbral de corte de satisfacción para inicializar el grafo.
-        beta (float): Riesgo de contagio. Una persona expuesta a un lugar con A expuestos y B asistentes sigue sana con probabilidad exp(-A/(beta*B)).
-        min_asistencias_para_cerrar (int): Número mínimo de asistencias diarias para mantener una entidad abierta.
-        max_infecciones_para_evitar (int): Número máximo de infecciones que puede tener un individuo en una entidad antes de evitarla.
-        politicas_publicas (bool): Indica si se implementan políticas públicas en la simulación.
+        beta (float): Riesgo de contagio. Una persona expuesta a un lugar con A infectores y B asistentes sigue sana con probabilidad exp(-A/(beta*B)).
         initial_exposeds (int): Cantidad de invididuos expuestos al inicio de la simulación.
         """
         self.n = n
