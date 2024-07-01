@@ -81,9 +81,6 @@ class SimulacionRed:
         for i in range(self.initial_exposeds):
             estados[i] = 'E'
             duraciones[i] = self.til_base + np.random.geometric(0.5)
-        # initial_exposed = random.randint(0, self.n-1)
-        # estados[initial_exposed] = 'E'
-        # duraciones[initial_exposed] = self.til_base + np.random.geometric(0.5)
         return estados, duraciones
 
     def inicializar_tolerancias(self) -> List[float]:
