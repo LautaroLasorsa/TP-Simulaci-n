@@ -3,7 +3,7 @@ import networkx as nx
 import random
 from typing import List, Tuple
 
-class Simulacion:
+class SimulacionRed:
     def __init__(self, n: int, m: int, til_base: int, tic_base: int, 
                  memoria: float, max_tolerancia_riesgo: float, umbral: float, fun_contagio , initial_exposeds : int = 1):
         """
@@ -17,11 +17,8 @@ class Simulacion:
         memoria (float): Coeficiente que se utiliza para actualizar el riesgo percibido para realizar una determinada actividad.
         max_tolerancia_riesgo (float): Máximo valor que puede tomar la tolerancia al riesgo de un individuo.
         umbral (float): Umbral de corte de satisfacción para inicializar el grafo.
-        beta (float): Riesgo de contagio. Una persona expuesta a un lugar con A expuestos y B asistentes sigue sana con probabilidad exp(-A/(beta*B)).
-        min_asistencias_para_cerrar (int): Número mínimo de asistencias diarias para mantener una entidad abierta.
-        max_infecciones_para_evitar (int): Número máximo de infecciones que puede tener un individuo en una entidad antes de evitarla.
-        politicas_publicas (bool): Indica si se implementan políticas públicas en la simulación.
-        inicial_exposeds : Cantidad de invididuos expuestos al inicio de la simulación.
+        func_contagio (function): Probabilidad de contagio dada la cantidad de infectados y la cantidad de asistentes a una entidad.
+        initial_exposeds (int): Cantidad de invididuos expuestos al inicio de la simulación.
         """
         self.n = n
         self.m = m
@@ -32,9 +29,6 @@ class Simulacion:
         self.umbral = umbral
         self.fun_contagio = fun_contagio
         self.initial_exposeds = initial_exposeds
-        # self.min_asistencias_para_cerrar = min_asistencias_para_cerrar
-        # self.max_infecciones_para_evitar = max_infecciones_para_evitar
-        # self.politicas_publicas = politicas_publicas
         
         self.B = self.inicializar_grafo()
         self.estados, self.duraciones = self.inicializar_estados_duracion()
@@ -87,9 +81,6 @@ class Simulacion:
         for i in range(self.initial_exposeds):
             estados[i] = 'E'
             duraciones[i] = self.til_base + np.random.geometric(0.5)
-        # initial_exposed = random.randint(0, self.n-1)
-        # estados[initial_exposed] = 'E'
-        # duraciones[initial_exposed] = self.til_base + np.random.geometric(0.5)
         return estados, duraciones
 
     def inicializar_tolerancias(self) -> List[float]:
